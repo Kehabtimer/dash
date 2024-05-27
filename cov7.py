@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load the data
-df = pd.read_excel("D:/PHDS/Data Science Fundamentals/Assignments/Visualization/COVID_worldwide.xlsx")
+df = pd.read_excel("COVID_worldwide.xlsx")  # Use the relative path
 
 # Set the title of the Streamlit app
 st.title("Global COVID-19 Data Dashboard")
