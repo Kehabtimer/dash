@@ -57,9 +57,9 @@ sum_deaths = df['deaths'].sum()
 # Helper function to format large numbers consistently
 def human_format(num, pos=None):
     if num >= 1e6:
-        return f'{num*1e-6:.1f}M'
+        return f'{num*1e-6:.2f}M'
     elif num >= 1e3:
-        return f'{num*1e-3:.1f}K'
+        return f'{num*1e-3:.2f}K'
     else:
         return str(int(num))
 
@@ -77,7 +77,7 @@ with col2:
 
 
 # Visualization 1: COVID-19 Cases by Country and Deaths by Country (Side by Side)
-st.subheader("COVID-19 Cases and Deaths by Country")
+st.subheader("Number of COVID-19 Cases and Deaths by Country")
 
 # Calculate top countries cases and deaths
 top_countries_cases = df.groupby('countriesAndTerritories')['cases'].sum().nlargest(10)
