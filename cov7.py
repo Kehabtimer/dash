@@ -69,9 +69,10 @@ if selected_year:
 if selected_month:
     df = df[df['dateRep'].dt.strftime('%b-%Y').isin(selected_month)]
 
-# Display the data frame
-st.subheader("COVID-19 Data")
-st.write(df.head())
+if st.checkbox("Display the raw data"):
+    # Display the data frame
+    st.subheader("COVID-19 Data")
+    st.write(df.head())
 
 # Calculate mean and sum values for the first table
 mean_cases = df['cases'].mean()
@@ -203,3 +204,18 @@ for idx, val in monthly_cfr.items():
 
 fig.suptitle("Figure 5: COVID-19 Cases and Deaths per 100,000 Population by Continent and Trends of COVID-19 Case Fatality Rate over Months", fontsize=16)
 st.pyplot(fig)
+
+## Visualization 7:14 Days Cumulative COVID-19 Cases per 100,000 Population
+st.subheader("Figure 6: 14 Days Cumulative COVID-19 Cases per 100,000 Population")
+plt.figure(figsize=(12, 8))
+# Plotting the data
+sns.lineplot(data=country_df, x='dateRep', y='Cumulative_number_for_14_days_of_COVID-19_cases_per_100000', marker='o', color='blue')
+
+# Formatting the plot
+plt.title('14 Days Cumulative COVID-19 Cases per 100,000 Population')
+plt.xlabel('Date')
+plt.ylabel('Cumulative number for 14 days of COVID-19 cases per 100,000')
+plt.grid(True)
+
+# Show the plot in Streamlit
+st.pyplot(plt)
