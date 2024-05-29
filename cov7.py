@@ -14,13 +14,22 @@ import seaborn as sns
 df = pd.read_excel("COVID_worldwide.xlsx")  # Use the relative path
 
 #Data cleaning
-df['cases'] = df['cases'].abs() #converting negative numbers to positive
+import pandas as pd
+import numpy as np
+
+# Load the data
+file_path = "COVID_worldwide.xlsx"
+df = pd.read_excel(file_path)
+
+# Replace negative 'cases' and 'deaths' with their absolute values
+df['cases'] = df['cases'].abs()
 df['deaths'] = df['deaths'].abs()
+
 # Ensure the data is sorted by date for each country
 df['dateRep'] = pd.to_datetime(df['dateRep'], format='%d/%m/%Y')
 df.sort_values(by=['countriesAndTerritories', 'dateRep'], inplace=True)
 
-# ReCalculate the 14-day cumulative number of COVID-19 cases per 100,000 population considering the cleaning done on cases.
+# Calculate the 14-day cumulative number of COVID-19 cases per 100,000 population
 def calculate_cumulative_cases_per_100000(group):
     group['Cumulative_number_for_14_days_of_COVID-19_cases_per_100000'] = (
         group['cases'].rolling(window=14, min_periods=1).sum() / group['popData2019'] * 100000
@@ -28,7 +37,11 @@ def calculate_cumulative_cases_per_100000(group):
     return group
 
 # Apply the function to each group of countries
-df = df.groupby('countriesAndTerritories').apply(calculate_cumulative_cases_per_100000)
+df = df.groupby('countriesAndTerritories', group_keys=False).apply(calculate_cumulative_cases_per_100000)
+
+# Save the updated dataframe to the original Excel file
+df.to_excel(file_path, index=False)
+
 
 
 # Set the title of the Streamlit app
