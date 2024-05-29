@@ -80,8 +80,8 @@ with col2:
 st.subheader("Number of COVID-19 Cases and Deaths by Country")
 
 # Calculate top countries cases and deaths
-top_countries_cases = df.groupby('countriesAndTerritories')['cases'].sum().nlargest(10)
-top_countries_deaths = df.groupby('countriesAndTerritories')['deaths'].sum().nlargest(10)
+top_countries_cases = df.groupby('countriesAndTerritories')['cases'].sum().nlargest(20)
+top_countries_deaths = df.groupby('countriesAndTerritories')['deaths'].sum().nlargest(20)
 
 # Plot top countries cases and deaths
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
@@ -89,14 +89,14 @@ top_countries_cases.plot(kind='bar', ax=ax1, color='skyblue')
 top_countries_deaths.plot(kind='bar', ax=ax2, color='salmon')
 
 # Set titles and labels
-ax1.set_title("Top 10 Countries by COVID-19 Cases")
+ax1.set_title("Top 20 Countries by COVID-19 Cases")
 ax1.set_ylabel("Total Cases (in 100,000)")
 ax1.set_xlabel("Countries")
 ax1.set_yticklabels([f'{int(y/1e5):,}' for y in ax1.get_yticks()])
-ax2.set_title("Top 10 Countries by COVID-19 Deaths")
+ax2.set_title("Top 20 Countries by COVID-19 Deaths")
 ax2.set_ylabel("Total Deaths")
 ax2.set_xlabel("Countries")
-fig.suptitle("Figure 1: Top 10 Countries by COVID-19 Cases and Deaths", fontsize=16)
+fig.suptitle("Figure 1: Top 20 Countries by COVID-19 Cases and Deaths", fontsize=16)
 
 # Display the visualization
 st.pyplot(fig)
