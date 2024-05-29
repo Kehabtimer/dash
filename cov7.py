@@ -2,7 +2,7 @@
 """
 Created on Fri May 24 11:43:13 2024
 
-@author: HP-PC
+@author: Alemu Derseh; Dereje Merrie; Gusha Belako; Kehabtimer Shiferaw
 """
 import streamlit as st
 import pandas as pd
@@ -12,6 +12,7 @@ import seaborn as sns
 
 # Load the data
 df = pd.read_excel("COVID_worldwide.xlsx")  # Use the relative path
+
 
 # Set the title of the Streamlit app
 st.title("Global COVID-19 Data Dashboard")
