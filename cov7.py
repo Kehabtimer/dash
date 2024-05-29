@@ -85,8 +85,8 @@ top_countries_deaths = df.groupby('countriesAndTerritories')['deaths'].sum().nla
 
 # Plot top countries cases and deaths
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-top_countries_cases.plot(kind='bar', ax=ax1, color='skyblue')
-top_countries_deaths.plot(kind='bar', ax=ax2, color='salmon')
+top_countries_cases.plot(kind='barh', ax=ax1, color='skyblue')
+top_countries_deaths.plot(kind='barh', ax=ax2, color='salmon')
 
 # Set titles and labels
 ax1.set_title("Top 20 Countries by COVID-19 Cases")
