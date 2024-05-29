@@ -85,8 +85,8 @@ top_countries_deaths = df.groupby('countriesAndTerritories')['deaths'].sum().nla
 
 # Plot top countries cases and deaths
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-top_countries_cases.plot(kind='barh', ax=ax1, color='skyblue')
-top_countries_deaths.plot(kind='barh', ax=ax2, color='salmon')
+top_countries_cases.plot(kind='bar', ax=ax1, color='skyblue')
+top_countries_deaths.plot(kind='bar', ax=ax2, color='salmon')
 
 # Set titles and labels
 ax1.set_title("Top 20 Countries by COVID-19 Cases")
@@ -156,7 +156,7 @@ st.subheader("COVID-19 Cases and Deaths per 100,000 Population by Continent and 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6))
 
 df_continent = df.groupby('continentExp')[['cases_per_100k', 'deaths_per_100k']].sum().sort_values(by='cases_per_100k', ascending=False)
-df_continent.plot(kind='bar', ax=ax1)
+df_continent.plot(kind='barh', ax=ax1)
 ax1.set_title("COVID-19 Cases and Deaths per 100,000 Population by Continent")
 ax1.set_ylabel("Rate per 100,000")
 ax1.set_xlabel("Continents")
