@@ -155,7 +155,7 @@ st.subheader("COVID-19 Cases and Deaths per 100,000 Population by Continent and 
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6))
 
-df_continent = df.groupby('continentExp')[['cases_per_100k', 'deaths_per_100k']].sum().sort_values(by='cases_per_100k', ascending=False)
+df_continent = df.groupby('continentExp')[['cases_per_100k', 'deaths_per_100k']].sum().sort_values(by='cases_per_100k', ascending=True)
 df_continent.plot(kind='barh', ax=ax1)
 ax1.set_title("COVID-19 Cases and Deaths per 100,000 Population by Continent")
 ax1.set_ylabel("Rate per 100,000")
