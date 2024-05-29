@@ -13,6 +13,28 @@ import seaborn as sns
 # Load the data
 df = pd.read_excel("COVID_worldwide.xlsx")  # Use the relative path
 
+#Data cleaning
+df['cases'] = df['cases'].abs() #converting negative numbers to positive
+df['deaths'] = df['deaths'].abs()
+# Ensure the data is sorted by date for each country
+df['dateRep'] = pd.to_datetime(df['dateRep'], format='%d/%m/%Y')
+df.sort_values(by=['countriesAndTerritories', 'dateRep'], inplace=True)
+
+# Calculate the 14-day cumulative number of COVID-19 cases per 100,000 population
+def calculate_cumulative_cases_per_100000(group):
+    group['Cumulative_number_for_14_days_of_COVID-19_cases_per_100000'] = (
+        group['cases'].rolling(window=14, min_periods=1).sum() / group['popData2019'] * 100000
+    )
+    return group
+
+# Apply the function to each group of countries
+df = df.groupby('countriesAndTerritories').apply(calculate_cumulative_cases_per_100000)
+
+# Save the updated dataframe to a new Excel file
+output_file_path = "C:/Users/HP-PC/COVID_worldwide2.xlsx"
+df.to_excel(output_file_path, index=False)
+
+print("Data processing complete. The updated file has been saved to:", output_file_path)
 
 # Set the title of the Streamlit app
 st.title("Global COVID-19 Data Dashboard")
