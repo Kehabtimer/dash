@@ -14,12 +14,6 @@ import seaborn as sns
 df = pd.read_excel("COVID_worldwide.xlsx")  # Use the relative path
 
 #Data cleaning
-import pandas as pd
-import numpy as np
-
-# Load the data
-file_path = "COVID_worldwide.xlsx"
-df = pd.read_excel(file_path)
 
 # Replace negative 'cases' and 'deaths' with their absolute values
 df['cases'] = df['cases'].abs()
@@ -40,7 +34,7 @@ def calculate_cumulative_cases_per_100000(group):
 df = df.groupby('countriesAndTerritories', group_keys=False).apply(calculate_cumulative_cases_per_100000)
 
 # Save the updated dataframe to the original Excel file
-df.to_excel(file_path, index=False)
+df.to_excel("COVID_worldwide.xlsx", index=False)
 
 
 
