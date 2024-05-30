@@ -72,7 +72,7 @@ if selected_month:
 if st.checkbox("Display the raw data"):
     # Display the data frame
     st.subheader("COVID-19 Data")
-    st.write(df.head())
+    st.write(df)
 
 # Calculate mean and sum values for the first table
 mean_cases = df['cases'].mean()
@@ -177,22 +177,31 @@ fig.suptitle("Figure 4: COVID-19 Cases and Deaths per 100,000 Population and Sca
 st.pyplot(fig)
 
 # Visualization 6: COVID-19 Cases and Deaths per 100,000 Population by Continent and Monthly CFR Trends (Side by Side)
-st.subheader("COVID-19 Cases and Deaths per 100,000 Population by Continent and Trends of COVID-19 Case Fatality Rate over Months")
+st.subheader("COVID-19 Cases and Deaths by Continent and Trends of COVID-19 Case Fatality Rate over Months")
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6))
 
-df_continent = df.groupby('continentExp')[['cases_per_100k', 'deaths_per_100k']].sum().sort_values(by='cases_per_100k', ascending=True)
-df_continent.plot(kind='barh', ax=ax1)
-ax1.set_title("COVID-19 Cases and Deaths per 100,000 Population by Continent")
-ax1.set_ylabel("Rate per 100,000")
-ax1.set_xlabel("Continents")
-ax1.legend(['Cases', 'Deaths'])
-for p in ax1.patches:
-    ax1.annotate(f'{human_format(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), 
-                 ha='center', va='center', xytext=(0, 10), textcoords='offset points')
+# Group by continent and sum cases and deaths, then sort by cases
+df_continent = df.groupby('continentExp')[['cases', 'deaths']].sum()
+df_continent['total'] = df_continent['cases'] + df_continent['deaths']
+df_continent = df_continent.sort_values(by='cases', ascending=True)
 
-df['month'] = df['dateRep'].dt.to_period('M')
-monthly_cfr = df.groupby('month')['deaths'].sum() / df.groupby('month')['cases'].sum() * 100
+# Plot horizontal bar graph for cases and deaths
+df_continent[['cases', 'deaths']].plot(kind='barh', stacked=True, ax=ax1, color=['skyblue', 'salmon'])
+ax1.set_title("COVID-19 Cases and Deaths by Continent")
+ax1.set_xlabel("Rate per 100,000")
+ax1.set_ylabel("Continents")
+ax1.legend(['Cases', 'Deaths'], loc='center', bbox_to_anchor=(0.4, 0.2))  # Move legend to the right
+ax1.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: '{:,.0f}'.format(x)))  # Format x-axis labels with commas
+
+# Add data labels to the bars
+for p in ax1.patches:
+    width, height = p.get_width(), p.get_height()
+    x, y = p.get_xy()
+    ax1.annotate(f'{int(width)}', (x + width/2, y + height/2), ha='center', va='center')
+
+filtered_df['month'] = filtered_df['dateRep'].dt.to_period('M')
+monthly_cfr = filtered_df.groupby('month')['deaths'].sum() / filtered_df.groupby('month')['cases'].sum() * 100
 
 monthly_cfr.plot(ax=ax2, marker='o', color='red')
 ax2.set_title("Trends of COVID-19 Case Fatality Rate over Months")
@@ -202,20 +211,24 @@ ax2.set_xticklabels([label.strftime('%b %Y') for label in monthly_cfr.index.to_t
 for idx, val in monthly_cfr.items():
     ax2.text(idx.to_timestamp(), val, f'{val:.2f}', ha='center', va='bottom')
 
-fig.suptitle("Figure 5: COVID-19 Cases and Deaths per 100,000 Population by Continent and Trends of COVID-19 Case Fatality Rate over Months", fontsize=16)
+fig.suptitle("Figure 5: COVID-19 Cases and Deaths by Continent and Trends of COVID-19 Case Fatality Rate over Months", fontsize=16)
 st.pyplot(fig)
 
-## Visualization 7:14 Days Cumulative COVID-19 Cases per 100,000 Population
+# Visualization 7: 14 Days Cumulative COVID-19 Cases per 100,000 Population
 st.subheader("Figure 6: 14 Days Cumulative COVID-19 Cases per 100,000 Population")
-plt.figure(figsize=(12, 8))
-# Plotting the data
-sns.lineplot(data=country_df, x='dateRep', y='Cumulative_number_for_14_days_of_COVID-19_cases_per_100000', marker='o', color='blue')
+
+# Filter for a specific country for better visualization (optional)
+selected_country_for_cumulative = st.selectbox('Select Country for Cumulative Cases', filtered_df['countriesAndTerritories'].unique())
+country_df = filtered_df[filtered_df['countriesAndTerritories'] == selected_country_for_cumulative]
+
+fig, ax = plt.subplots(figsize=(12, 8))
+sns.lineplot(data=country_df, x='dateRep', y='Cumulative_number_for_14_days_of_COVID-19_cases_per_100000', marker='o', color='blue', ax=ax)
 
 # Formatting the plot
-plt.title('14 Days Cumulative COVID-19 Cases per 100,000 Population')
-plt.xlabel('Date')
-plt.ylabel('Cumulative number for 14 days of COVID-19 cases per 100,000')
-plt.grid(True)
+ax.set_title('14 Days Cumulative COVID-19 Cases per 100,000 Population')
+ax.set_xlabel('Date')
+ax.set_ylabel('Cumulative number for 14 days of COVID-19 cases per 100,000')
+ax.grid(True)
 
 # Show the plot in Streamlit
-st.pyplot(plt)
+st.pyplot(fig)
