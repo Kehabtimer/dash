@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 24 11:43:13 2024
+Created on Thu May 30 02:24:04 2024
+
 
 @author: Alemu Derseh; Dereje Merrie; Gusha Belako; Kehabtimer Shiferaw
 """
@@ -13,7 +14,7 @@ import seaborn as sns
 # Load the data
 df = pd.read_excel("COVID_worldwide.xlsx")  # Use the relative path
 
-#Data cleaning
+# Data cleaning
 
 # Replace negative 'cases' and 'deaths' with their absolute values
 df['cases'] = df['cases'].abs()
@@ -23,7 +24,8 @@ df['deaths'] = df['deaths'].abs()
 df['dateRep'] = pd.to_datetime(df['dateRep'], format='%d/%m/%Y')
 df.sort_values(by=['countriesAndTerritories', 'dateRep'], inplace=True)
 
-# Calculate the 14-day cumulative number of COVID-19 cases per 100,000 population
+# ReCalculate the 14-day cumulative number of COVID-19 cases per 100,000 population
+
 def calculate_cumulative_cases_per_100000(group):
     group['Cumulative_number_for_14_days_of_COVID-19_cases_per_100000'] = (
         group['cases'].rolling(window=14, min_periods=1).sum() / group['popData2019'] * 100000
@@ -35,8 +37,6 @@ df = df.groupby('countriesAndTerritories', group_keys=False).apply(calculate_cum
 
 # Save the updated dataframe to the original Excel file
 df.to_excel("COVID_worldwide.xlsx", index=False)
-
-
 
 # Set the title of the Streamlit app
 st.title("Global COVID-19 Data Dashboard")
@@ -60,25 +60,29 @@ else:
     selected_month = st.sidebar.multiselect('Select Month', df['dateRep'].dt.strftime('%b-%Y').unique())
 
 # Apply filters
+filtered_df = df.copy()
 if selected_continent:
-    df = df[df['continentExp'].isin(selected_continent)]
+    filtered_df = filtered_df[filtered_df['continentExp'].isin(selected_continent)]
 if selected_country:
-    df = df[df['countriesAndTerritories'].isin(selected_country)]
+    filtered_df = filtered_df[filtered_df['countriesAndTerritories'].isin(selected_country)]
 if selected_year:
-    df = df[df['year'].isin(selected_year)]
+    filtered_df = filtered_df[filtered_df['year'].isin(selected_year)]
 if selected_month:
-    df = df[df['dateRep'].dt.strftime('%b-%Y').isin(selected_month)]
+    filtered_df = filtered_df[filtered_df['dateRep'].dt.strftime('%b-%Y').isin(selected_month)]
 
+# Display raw data checkbox
 if st.checkbox("Display the raw data"):
     # Display the data frame
     st.subheader("COVID-19 Data")
-    st.write(df)
+    st.write(filtered_df)
 
-# Calculate mean and sum values for the first table
-mean_cases = df['cases'].mean()
-mean_deaths = df['deaths'].mean()
-sum_cases = df['cases'].sum()
-sum_deaths = df['deaths'].sum()
+# Calculate mean, standard deviation, and sum values for the first table
+mean_cases = filtered_df['cases'].mean()
+std_cases = filtered_df['cases'].std()
+mean_deaths = filtered_df['deaths'].mean()
+std_deaths = filtered_df['deaths'].std()
+sum_cases = filtered_df['cases'].sum()
+sum_deaths = filtered_df['deaths'].sum()
 
 # Helper function to format large numbers consistently
 def human_format(num, pos=None):
@@ -89,25 +93,23 @@ def human_format(num, pos=None):
     else:
         return str(int(num))
 
-# Display mean and sum data boxes only for the first table
+# Display mean (+/- SD) and sum data boxes only for the first table
 col1, col2 = st.columns(2)
 
 with col1:
-    st.info(f"Mean Cases: {mean_cases:.2f}")
+    st.info(f"Mean Cases: {mean_cases:.2f} (+/- {std_cases:.2f})")
     st.info(f"Total Cases: {human_format(sum_cases)}")
 
 with col2:
-    st.info(f"Mean Deaths: {mean_deaths:.2f}")
+    st.info(f"Mean Deaths: {mean_deaths:.2f} (+/- {std_deaths:.2f})")
     st.info(f"Total Deaths: {human_format(sum_deaths)}")
-
-
 
 # Visualization 1: COVID-19 Cases by Country and Deaths by Country (Side by Side)
 st.subheader("Number of COVID-19 Cases and Deaths by Country")
 
 # Calculate top countries cases and deaths
-top_countries_cases = df.groupby('countriesAndTerritories')['cases'].sum().nlargest(20)
-top_countries_deaths = df.groupby('countriesAndTerritories')['deaths'].sum().nlargest(20)
+top_countries_cases = filtered_df.groupby('countriesAndTerritories')['cases'].sum().nlargest(20)
+top_countries_deaths = filtered_df.groupby('countriesAndTerritories')['deaths'].sum().nlargest(20)
 
 # Plot top countries cases and deaths
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
@@ -130,11 +132,11 @@ st.pyplot(fig)
 # Visualization 3: Weekly Statistics and Visualization 4: Rate of Increase (Side by Side)
 st.subheader("Weekly COVID-19 Cases and Rate of Increase")
 
-df['week'] = df['dateRep'].dt.isocalendar().week
-weekly_cases = df.groupby('week')['cases'].sum()
-df_sorted = df.sort_values(by='dateRep')
-df_sorted['cumulative_cases'] = df_sorted.groupby('countriesAndTerritories')['cases'].cumsum()
-df_sorted['rate_of_increase'] = df_sorted['cumulative_cases'].pct_change().fillna(0)
+filtered_df['week'] = filtered_df['dateRep'].dt.isocalendar().week
+weekly_cases = filtered_df.groupby('week')['cases'].sum()
+filtered_df_sorted = filtered_df.sort_values(by='dateRep')
+filtered_df_sorted['cumulative_cases'] = filtered_df_sorted.groupby('countriesAndTerritories')['cases'].cumsum()
+filtered_df_sorted['rate_of_increase'] = filtered_df_sorted['cumulative_cases'].pct_change().fillna(0)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6))
 
@@ -144,7 +146,7 @@ ax1.set_ylabel("Total Cases (in 100,000)")
 ax1.set_xlabel("Week Number")
 ax1.set_yticklabels([f'{int(y/1e5):,}' for y in ax1.get_yticks()])
 
-df_sorted.groupby('dateRep')['rate_of_increase'].mean().plot(ax=ax2, color='red')
+filtered_df_sorted.groupby('dateRep')['rate_of_increase'].mean().plot(ax=ax2, color='red')
 ax2.set_title("Average Rate of Increase of COVID-19 Cases")
 ax2.set_ylabel("Rate of Increase")
 ax2.set_xlabel("Date")
@@ -154,20 +156,20 @@ st.pyplot(fig)
 
 # Visualization 5: Cases and Deaths per 100,000 Population and Scatterplot
 st.subheader("COVID-19 Cases and Deaths per 100,000 Population")
-df['cases_per_100k'] = df['cases'] * 100000 / df['popData2019']
-df['deaths_per_100k'] = df['deaths'] * 100000 / df['popData2019']
+filtered_df['cases_per_100k'] = filtered_df['cases'] * 100000 / filtered_df['popData2019']
+filtered_df['deaths_per_100k'] = filtered_df['deaths'] * 100000 / filtered_df['popData2019']
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6))
 
-df.groupby('dateRep')['cases_per_100k'].mean().plot(ax=ax1, label='Cases', color='purple')
-df.groupby('dateRep')['deaths_per_100k'].mean().plot(ax=ax1, label='Deaths', color='orange')
+filtered_df.groupby('dateRep')['cases_per_100k'].mean().plot(ax=ax1, label='Cases', color='purple')
+filtered_df.groupby('dateRep')['deaths_per_100k'].mean().plot(ax=ax1, label='Deaths', color='orange')
 ax1.set_title("COVID-19 Cases and Deaths per 100,000 Population")
 ax1.set_ylabel("Rate per 100,000")
 ax1.set_xlabel("Date")
 ax1.legend()
 
-sns.scatterplot(x='cases_per_100k', y='deaths_per_100k', data=df, ax=ax2)
-sns.regplot(x='cases_per_100k', y='deaths_per_100k', data=df, scatter=False, ax=ax2, color='red', label='Trend line')
+sns.scatterplot(x='cases_per_100k', y='deaths_per_100k', data=filtered_df, ax=ax2)
+sns.regplot(x='cases_per_100k', y='deaths_per_100k', data=filtered_df, scatter=False, ax=ax2, color='red', label='Trend line')
 ax2.set_title("Scatterplot of Cases vs Deaths per 100,000 Population")
 ax2.set_xlabel("Cases per 100,000")
 ax2.set_ylabel("Deaths per 100,000")
